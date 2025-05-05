@@ -21,3 +21,9 @@ news-classification/
 - [ ] Wybór nietypowego zbioru danych
 - [ ] Pipeline NLP
 - [ ] Trening modelu klasyfikującego
+
+## 📦 Dane
+
+Dane są pobierane automatycznie z Hugging Face.
+
+**Źródło**: [okite97/news-data](https://huggingface.co/datasets/okite97/news-data)
