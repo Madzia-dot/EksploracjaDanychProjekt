@@ -17,9 +17,8 @@ news-classification/
 ## 🗒️ Etapy projektu
 
 - [x] Utworzenie repozytorium
-- [ ] Lematyzacja danych
-- [ ] Wybór nietypowego zbioru danych
-- [ ] Pipeline NLP
+- [x] Wybór nietypowego zbioru danych
+- [x] Pipeline NLP
 - [ ] Trening modelu klasyfikującego
 
 ## 📦 Dane
