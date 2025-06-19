@@ -7,24 +7,26 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import classification_report, accuracy_score
 import joblib
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
+from sklearn.ensemble import RandomForestClassifier
 
-# ===============================
-# 🔹 1. Wczytanie i eksploracja danych
-# ===============================
+# 1. Wczytanie i eksploracja danych
+
 df = pd.read_csv("data/train.csv")
 
-print("📁 Liczba rekordów:", len(df))
-print("\n🔍 Podgląd danych:")
+print("Liczba rekordów:", len(df))
+print("\nPodgląd danych:")
 print(df.head())
 
-print("\n❓ Brakujące dane:")
+print("\n Brakujące dane:")
 print(df.isnull().sum())
 
 duplikaty = df.duplicated().sum()
-print(f"\n📎 Liczba duplikatów: {duplikaty}")
+print(f"\nLiczba duplikatów: {duplikaty}")
 
 df["text_length"] = df["text"].apply(lambda x: len(str(x).split()))
-print("\n📝 Statystyki długości tekstów:")
+print("\nStatystyki długości tekstów:")
 print(df["text_length"].describe())
 
 plt.figure(figsize=(8, 4))
@@ -35,7 +37,7 @@ plt.ylabel("Liczba wiadomości")
 plt.tight_layout()
 plt.show()
 
-print("\n📊 Rozkład kategorii:")
+print("\nRozkład kategorii:")
 print(df["Category"].value_counts())
 
 plt.figure(figsize=(8, 4))
@@ -47,22 +49,22 @@ plt.xticks(rotation=45)
 plt.tight_layout()
 plt.show()
 
-print("\n⚠️ Najkrótsze teksty:")
+print("\n Najkrótsze teksty:")
 print(df[df["text_length"] < 5][["text", "Category"]].head())
 
 def zawiera_link(text):
     return bool(re.search(r"http[s]?://", str(text)))
 
 df["has_link"] = df["text"].apply(zawiera_link)
-print("\n🔗 Liczba tekstów z linkami:", df["has_link"].sum())
+print("\n Liczba tekstów z linkami:", df["has_link"].sum())
 
-# ===============================
-# 🔹 2. Czyszczenie danych
-# ===============================
+
+# 2. Czyszczenie danych
+
 df = df.dropna(subset=["text"])
 df = df.drop_duplicates()
 
-print("\n✅ Po czyszczeniu:", df.shape)
+print("\n Po czyszczeniu:", df.shape)
 
 def clean_text(text):
     if not isinstance(text, str):
@@ -75,51 +77,68 @@ def clean_text(text):
 
 df["clean_text"] = df["text"].apply(clean_text)
 
-print("\n🧼 Przykład czyszczenia tekstu:")
-print(df[["text", "clean_text"]].head())
-
-# ===============================
-# 🔹 3. Podział na zbiory
-# ===============================
+# 3. Podział na zbiory
 X = df["clean_text"]
 y = df["Category"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# ===============================
-# 🔹 4. Wektoryzacja tekstu
-# ===============================
+# 4. Wektoryzacja tekstu
 vectorizer = TfidfVectorizer(max_features=5000)
 X_train_vec = vectorizer.fit_transform(X_train)
 X_test_vec = vectorizer.transform(X_test)
 
-# ===============================
-# 🔹 5. Budowa i trenowanie modelu
-# ===============================
-model = MultinomialNB()
-model.fit(X_train_vec, y_train)
+# 5. Budowa i trenowanie modeli
 
-# ===============================
-# 🔹 6. Ewaluacja modelu
-# ===============================
-y_pred = model.predict(X_test_vec)
+models = {
+    "MultinomialNB": MultinomialNB(),
+    "LogisticRegression": LogisticRegression(max_iter=1000),
+    "LinearSVC": LinearSVC(),
+    "RandomForest": RandomForestClassifier(n_estimators=100, random_state=42)
+}
 
-print("\n🎯 Accuracy:", accuracy_score(y_test, y_pred))
-print("\n📊 Raport klasyfikacji:\n", classification_report(y_test, y_pred))
+results = {}
 
-# ===============================
-# 🔹 7. Zapis modelu i wektoryzatora
-# ===============================
-joblib.dump(model, "model.pkl")
+for name, model in models.items():
+    print(f"\nTrenowanie modelu: {name}")
+    model.fit(X_train_vec, y_train)
+    y_pred = model.predict(X_test_vec)
+
+    acc = accuracy_score(y_test, y_pred)
+    print(f"\n{name} - Accuracy: {acc:.4f}")
+    print(f"\n{name} - Raport klasyfikacji:\n{classification_report(y_test, y_pred)}")
+
+    results[name] = {
+        "model": model,
+        "accuracy": acc
+    }
+
+
+# 7. Zapis najlepszego modelu
+
+best_model_name = max(results, key=lambda name: results[name]["accuracy"])
+best_model = results[best_model_name]["model"]
+
+joblib.dump(best_model, "model.pkl")
 joblib.dump(vectorizer, "vectorizer.pkl")
-print("\n💾 Model i wektoryzator zapisane jako model.pkl i vectorizer.pkl")
+print(f"\n Najlepszy model ({best_model_name}) i wektoryzator zapisane jako model.pkl i vectorizer.pkl")
 
-# ===============================
-# 🔹 8. Przykład predykcji
-# ===============================
-example = ["Get help now! Visit http://support.com"]
-example_cleaned = [clean_text(t) for t in example]
-example_vec = vectorizer.transform(example_cleaned)
-prediction = model.predict(example_vec)
-print("\n🔮 Przykład predykcji:", prediction[0])
+
+# 9. Porównanie dokładności modeli – wykres
+model_names = list(results.keys())
+accuracies = [results[name]["accuracy"] for name in model_names]
+
+plt.figure(figsize=(8, 5))
+sns.barplot(x=accuracies, y=model_names, palette="viridis")
+plt.xlabel("Dokładność (Accuracy)")
+plt.title("Porównanie dokładności modeli")
+plt.xlim(0, 1)
+plt.grid(True, axis='x', linestyle='--', alpha=0.7)
+for i, acc in enumerate(accuracies):
+    plt.text(acc + 0.01, i, f"{acc:.2f}", va="center")
+plt.tight_layout()
+plt.show()
+
+
+
 
