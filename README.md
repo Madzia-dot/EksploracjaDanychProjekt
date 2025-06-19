@@ -6,6 +6,6 @@ Projekt polega na automatycznej klasyfikacji wiadomości na kategorie tematyczne
 
 ## 📦 Dane
 
-Dane są pobierane automatycznie z Hugging Face.
+Dane są z Hugging Face.
 
 **Źródło**: [okite97/news-data](https://huggingface.co/datasets/okite97/news-data)
