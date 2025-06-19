@@ -4,23 +4,6 @@
 Projekt polega na automatycznej klasyfikacji wiadomości na kategorie tematyczne z wykorzystaniem metod przetwarzania języka naturalnego (NLP).
 
 
-## 🔧 Struktura projektu
-news-classification/
-├── data/ # Surowe i przetworzone dane
-├── notebooks/ # Notebooki do eksploracji danych
-├── src/ # Kod źródłowy
-│ ├── preprocessing/ # Lematyzacja, czyszczenie itp.
-│ └── models/ # Trening i ewaluacja modeli
-├── docs/ # Dokumentacja, raporty
-└── README.md
-
-## 🗒️ Etapy projektu
-
-- [x] Utworzenie repozytorium
-- [x] Wybór nietypowego zbioru danych
-- [x] Pipeline NLP
-- [ ] Trening modelu klasyfikującego
-
 ## 📦 Dane
 
 Dane są pobierane automatycznie z Hugging Face.
